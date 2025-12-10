@@ -1,0 +1,59 @@
+version: "3.7"
+
+services:
+    InboundParser:
+        image: forgejo.ibmgcloud.net/dth/inbound_parser:latest
+        volumes:
+            # point to your ssl certificate
+            - ./certs/v2dnode01.crt:/var/inbound/certs/ssl.crt
+            # point to your ssl key
+            - ./certs/v2dnode01.key:/var/inbound/certs/ssl.key
+            # where email dumps are stored
+            - ./dump_dir:/var/inbound/dump_dir
+            - ./email_text_plain:/var/inbound/email_text_plain
+            - ./config.yaml:/var/inbound/config.yaml
+            - clamav_dir:/run/clamav
+            - ./clamd.conf:/etc/clamav/clamd.conf:ro
+        environment:
+            - CONFIG_PATH=/var/inbound/config.yaml
+            # when the email dumps should be checked for required deletion
+            - "CRON_TIME=0 3 * * *"
+        ports:
+            # on what port the HTTPS dumper should listen on
+            - 9000:9000
+        restart: unless-stopped
+        healthcheck:
+            test: "[ \"$(curl --insecure --write-out '%{http_code}' https://localhost:9000/inbound)\" -eq 400 ] || exit 1"
+            interval: 30s
+            retries: 7
+            start_period: 60s
+            timeout: 10s
+        depends_on:
+            - DockerCron
+
+    ClamAVd:
+        image: clamav/clamav:stable@sha256:9a4fc31fd7b3fe74bf86e1211bdce9b3009d610a12381da2b7d2c2b7469eba30
+        volumes:
+            - ./dump_dir:/var/inbound/dump_dir:ro
+            - clamav_dir:/run/clamav
+            - ./clamd.conf:/etc/clamav/clamd.conf:ro
+            - ./clamd_log:/var/log/clamav
+        restart: unless-stopped
+        healthcheck:
+            test: clamdscan --ping 1 || exit 1
+            interval: 30s
+            retries: 3
+            start_period: 60s
+            timeout: 10s
+
+    DockerCron:
+        image: chrisbesch/docker_cron@sha256:9a4f32020bf08567f531dab2eea874c7938205de0460ef32f60318f5138a6dbd
+        volumes:
+            # path to docker socket
+            # `$XDG_RUNTIME_DIR/docker.sock` in rootless install,
+            # otherwise usually in `/var/run/docker.sock`
+            - "$XDG_RUNTIME_DIR/docker.sock:/var/run/docker.sock:rw"
+        restart: unless-stopped
+
+volumes:
+    clamav_dir:

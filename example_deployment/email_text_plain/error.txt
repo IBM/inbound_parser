@@ -1,0 +1,8 @@
+Hello,
+
+your E-Mail was rejected as it was directed at the address of the Jira installation: {{.JiraInstall.URL}}.
+This installation hosts multiple servicedesks. Please address your message at the Jira Servicedesk concerning your request.
+
+Thank you
+IBM
+

@@ -1,0 +1,23 @@
+=============REPLY ABOVE THIS LINE=============
+
+
+Dear Valued Customer,
+
+Thank you for contacting FloppyStorage support! Your request has been received and is currently being reviewed by our team.
+
+Your request has been tagged as {{.Request.IssueKey}} and can be tracked at {{.Request.PortalLink}}. Please save this link for future reference, as it will allow you to easily check the status of your request.
+
+One of our expert floppy disk technicians will be in touch with you as soon as possible to assist with your inquiry. We strive to provide timely and efficient support, but please bear with us if there is a slight delay due to high volume.
+
+If you have any additional information to provide or questions to ask, please reply to this email and we'll get back to you as soon as we can.
+
+Thank you for choosing FloppyStorage for your data storage needs. We appreciate your business and look forward to serving you!
+
+Best regards,
+The FloppyStorage Support Team
+
+
+Support Hours: Mo-Fr, 9:00 - 17:00 CET/CEST (German working days)
+Maintenance window each Wednesday from 07:00 to 09:00 CET/CEST.
+Some applications or services may not be available during this time. 
+

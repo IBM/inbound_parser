@@ -1,0 +1,22 @@
+----------------------
+Reply above this line.
+
+
+Dear Ladies and Gentlemen,
+
+thank you for contacting the IBM DevOps CoC Germany help desk.
+
+We have created a service request for your request
+and will get back to you as soon as we have new information.
+
+In case of any question or addition in regard to this ticket,
+please use the link below to view the request and fill in a comment.
+Kind regards,
+DevOps CoC
+
+{{.Request.PortalLink}}
+
+Support Hours: Mo-Fr, 9:00 - 17:00 CET/CEST (German working days)
+Maintenance window each Wednesday from 07:00 to 09:00 CET/CEST.
+Some applications or services may not be available during this time. 
+

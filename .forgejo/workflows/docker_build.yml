@@ -1,0 +1,47 @@
+name: docker_build
+
+on:
+  push:
+    branches: [main]
+    tags: ["*.*.*"]
+  pull_resuests:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  IMAGE_NAME: inbound_parser
+  REGISTRY: forgejo.ibmgcloud.net
+
+jobs:
+  docker-build-deploy:
+    runs-on: docker_debian
+    steps:
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4
+        with:
+          fetch-depth: 0
+
+      - name: Login to Registry
+        uses: docker/login-action@184bdaa0721073962dff0199f1fb9940f07167d1 # v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ vars.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_TOKEN }}
+
+      - name: Extract Docker Metadata
+        id: meta
+        uses: docker/metadata-action@c1e51972afc2121e065aed6d45c65596fe445f3f # v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ forge.repository_owner }}/${{ env.IMAGE_NAME }}
+          github-token: ${{ forge.token }}
+
+      - name: Build and Push the Docker Image
+        id: build-and-push
+        uses: docker/build-push-action@263435318d21b8e681c14492fe198d362a7d2c83 # v6
+        with:
+          context: .
+          push: ${{ forge.event_name != 'pull_request' }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          network: host
+          build-args: |
+            HTTP_PROXY=${{ vars.HTTP_PROXY }}

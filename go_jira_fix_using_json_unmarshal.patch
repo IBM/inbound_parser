@@ -1,0 +1,46 @@
+From 4d0a1d83855f18352f18f6047bb3c242a853aceb Mon Sep 17 00:00:00 2001
+From: Christopher Besch <mail@chris-besch.com>
+Date: Tue, 31 Jan 2023 13:56:20 +0100
+Subject: [PATCH] fix: using json.Unmarshal
+
+---
+ onpremise/jira.go | 9 +++++++--
+ 1 file changed, 7 insertions(+), 2 deletions(-)
+
+diff --git a/onpremise/jira.go b/onpremise/jira.go
+index b98c966..5deb341 100644
+--- a/onpremise/jira.go
++++ b/onpremise/jira.go
+@@ -6,6 +6,7 @@ import (
+ 	"encoding/json"
+ 	"fmt"
+ 	"io"
++	"io/ioutil"
+ 	"net/http"
+ 	"net/url"
+ 	"reflect"
+@@ -288,6 +289,7 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
+ 	if err != nil {
+ 		return nil, err
+ 	}
++	defer httpResp.Body.Close()
+ 
+ 	err = CheckResponse(httpResp)
+ 	if err != nil {
+@@ -298,8 +300,11 @@ func (c *Client) Do(req *http.Request, v interface{}) (*Response, error) {
+ 
+ 	if v != nil {
+ 		// Open a NewDecoder and defer closing the reader only if there is a provided interface to decode to
+-		defer httpResp.Body.Close()
+-		err = json.NewDecoder(httpResp.Body).Decode(v)
++		body, err := ioutil.ReadAll(httpResp.Body)
++		if err != nil {
++			return newResponse(httpResp, nil), err
++		}
++		err = json.Unmarshal(body, v)
+ 	}
+ 
+ 	resp := newResponse(httpResp, v)
+-- 
+2.39.3
+

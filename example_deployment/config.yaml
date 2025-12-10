@@ -1,0 +1,151 @@
+# optional
+# send emails when a critical error occurs to this address
+critical_mail_to: "dth-admin-monitor-dev@ibmgcloud.net"
+# where those critical error emails should be sent from
+critical_mail_from: "inbound-parser-critical-error@staging.dth.ihost.com"
+
+# should the inbound_parser receive https requests from sendgrid
+# can be disabled to test the inbound_parser with dumped emails
+dump_requests: false
+# when false only dump emails but don't parse them into jira
+# when true and dump_requests is false load all dumped emails into jira -> for testing
+# make sure to disable restart: unless-stopped in docker-compose.yaml
+parse_requests: true
+# debug flag: when this is set all incoming emails will be parsed and printed to stdout
+# no request will be created in jira; the entire jira_installs config struct is ignored
+# this flag is never to be used in production
+debug_parse_only: false
+# should emails be sent to the customers?
+send_emails: true
+# should the json event webhook be enabled
+# this is used for the sendgrid event hook for email drops and bounces
+handle_events: true
+# the username of the user that should create the events
+# defaults to the servicedesk's token's user
+handle_events_username: "event-creation-user"
+# should malware be checked
+# only disable for testing
+check_malware: false
+# change in docker-compose.yaml
+clamav_scandir: /run/clamav/scandir
+# change in docker-compose.yaml
+dump_dir: /var/inbound/dump_dir
+# after how many days of storaging a mail should it be deleted
+# set to 0 if never to delete
+email_keep_days: 30
+# spam assassin score cut off
+# any emails with a score higher than this will get discarded
+max_spam_score: 2
+
+# change in docker-compose.yaml
+port: 9000
+# the domain listening on
+domain: localhost
+# change in docker-compose.yaml
+ssl_cert: /var/inbound/certs/ssl.crt
+# change in docker-compose.yaml
+ssl_key: /var/inbound/certs/ssl.key
+# the token in sendgrid's inbound webhook url's `?token=...` query parameter
+sendgrid_token: some_token_here
+# whatever email addresses the inbound_parser should neither reply to nor create jira accounts for
+dont_reply_to_emails: ["test@example.com", "test2@example2.com"]
+# ignore spam checks and auto-reply checks for these addresses
+email_whitelist: ["functional-mailbox@example.com"]
+# attacks could add thousands of addresses as Cc
+# don't make Jira create that many accounts
+max_participants: 30
+
+# outbound email host
+send_email_host: mail.staging.prv.v2.dth.ihost.com
+# outbound email port
+send_email_port: 2525
+
+jira_installs:
+  # one element for each jira installation
+  - url: "https://dthdev01.ibmgcloud.net/jira"
+    # the MailMaster's personal access token
+    token: "some_token_here"
+    # optional: the admin token for customer creation
+    admin_token: "some_token_here"
+    # a customer can comment a request through these email addresses but not create new ones
+    # the request ticket in the email summary decides what jira project the comment is for
+    # customers can't create requests through here
+    emails: ["jira-install@staging.dth.ihost.com"]
+    # when the customer tries to create a request using one of the addresses above
+    # the inbound_parser sends an error mail to the customer
+    # The customers mail's Subject will be prepended with this
+    # may be left blank
+    rejected_mail_subject: "Mail Rejected"
+    # The error error mail explained above will be templated with this
+    rejected_mail_template_path: "/var/inbound/email_text_plain/error.txt"
+    # the name of the sender of the error mail described above
+    # may be left blank
+    reply_email_name: "Staging DTH Jira"
+    servicedesks:
+      # one element for each servicedesk
+      - project_key: ILC
+        # needs to be set for exatcly one project if handle_events is true
+        create_event_requests: false
+        # what email addresses should be the inbound_parser listen on for this servicedesk
+        emails:
+          - ilc@staging.dth.ihost.com
+          - test@staging.dth.ihost.com
+          - ilc.incident@staging.dth.ihost.com
+        # name of the address the inbound_parser replies with
+        reply_email_name: "ILC Servicedesk"
+        # the type of request to create when an email comes in.
+        request_type: "Get IT help"
+        # the request status that should not be commented
+        dont_comment_request_status: ["Canceled", "Closed"]
+        # optional: postfix for all request summaries
+        request_postfix: "inbound parsed"
+        # template for when user without an account on jira created a request
+        request_creation_email_text_plain_path: /var/inbound/email_text_plain/request.txt
+        # if this line is in a received mail, ignore everything below it
+        # always use entire recieved mail if this is an empty string
+        reply_above_this: "=============REPLY ABOVE THIS LINE============="
+      # stub project only for event creation are also fine
+      - project_key: FLOPS
+        request_type: "Technical support"
+        create_event_requests: true
+      # and another one
+      - project_key: GOAR
+        emails:
+          - goar@staging.dth.ihost.com
+          - goar.bug@staging.dth.ihost.com
+        reply_email_name: "GOAR Servicedesk"
+        request_type: "Technical support"
+        request_postfix: "really well inbound parsed"
+        request_creation_email_text_plain_path: /var/inbound/email_text_plain/request.txt
+
+  # and another one
+  - url: "https://dthdev01.ibmgcloud.net/jira"
+    token: "some_token_here"
+    admin_token: "some_token_here"
+    servicedesks:
+      - project_key: GOAR
+        emails:
+          - goar.feature@staging.dth.ihost.com
+        reply_email_name: "GOAR Servicedesk 2"
+        request_type: "Technical support"
+        request_postfix: "parsed with I like cheese"
+        request_creation_email_text_plain_path: /var/inbound/email_text_plain/request.txt
+      - project_key: FROG
+        emails:
+          - frog@staging.dth.ihost.com
+          - frog.service-request@staging.dth.ihost.com
+        request_type: "IT help"
+        request_postfix: "parsed with a frog"
+        request_creation_email_text_plain_path: /var/inbound/email_text_plain/request.txt
+
+  - url: "https://dthdev01.ibmgcloud.net/jira"
+    token: "some_token_here"
+    admin_token: "some_token_here"
+    servicedesks:
+      - project_key: FLOPS
+        emails:
+          - floppy-storage-support@staging.dth.ihost.com
+        reply_email_name: "Floppy Storage Support"
+        request_type: "Technical support"
+        request_creation_email_text_plain_path: /var/inbound/email_text_plain/floppy_storage_request.txt
+        reply_above_this: "=============REPLY ABOVE THIS LINE============="
