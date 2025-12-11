@@ -3,7 +3,7 @@
 The application is written in Golang and to be deployed using Docker Compose (and Ansible).  
 It exposes an HTTP endpoint for [Sendgrid's Inbound Parse Webhook](https://docs.sendgrid.com/for-developers/parsing-email/setting-up-the-inbound-parse-webhook), parses the email, performs certain actions on (multiple) Jira instances using the Jira Servicedesk API and sends reply emails.
 
-# [docker_cron](https://github.ibmgcloud.net/dth/docker_cron)
+# [docker_cron](https://github.com/christopher-besch/docker_cron)
 - docker_cron needs to be installed on the host.
 
 # Configuring Jira
@@ -140,7 +140,7 @@ Everything is documented there.
 The inbound_parser performs an extensive config check at startup, telling what you configured incorrectly.
 
 ## Starting the inbound_parser
-Go to `/run/mail-inbound-parser` and run `docker compose up -d` (You might need to login first using `docker login containers.github.ibmgcloud.net`; use your username and a personal access token).
+Go to `/run/mail-inbound-parser` and run `docker compose up -d` (You might need to login first using `docker login`; use your username and a personal access token).
 You might need to run `docker-compose` instead of `docker compose` depending on your installed version.
 To check the logs, run `docker compose logs --follow`.
 
@@ -201,7 +201,6 @@ The inbound_parser uses the to/cc/bcc headers and the to field in the envelope t
 
 ## Repopulating the Vendor Dir
 Because of [a bug](https://github.com/andygrunwald/go-jira/pull/611) in the jira library every time you `go mod vendor` you need to apply [this fix](https://github.com/andygrunwald/go-jira/pull/611/files) manually.
-Refer to [#48](https://github.ibmgcloud.net/dth/mail-inbound-parser/issues/48) for more info.
 You can use `go_jira_fix_using_json_unmarshal.patch` for that.
 
 ## Updating Dependencies
