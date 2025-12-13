@@ -1,3 +1,4 @@
+# Moved to https://codeberg.org/ibm/inbound_parser
 # inbound_parser
 - The Jira inbound_parser allows possibly unknown senders to create Jira Servicedesk request, comment on them and receive any subsequent updates concerning their request.  
 The application is written in Golang and to be deployed using Docker Compose (and Ansible).  
